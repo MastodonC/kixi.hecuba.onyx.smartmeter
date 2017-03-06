@@ -62,7 +62,7 @@
                        :onyx/max-peers kafka-topic-partitions
                        :kafka/zookeeper (get-in config [:env-config :zookeeper/address])
                        :kafka/topic kafka-topic
-                       :kafka/group-id "travelport-onyx-consumer"
+                       :kafka/group-id "hecuba-onyx-smartmeter"
                        :kafka/receive-buffer-bytes 65536
                        :kafka/offset-reset :latest
                        :kafka/force-reset? false

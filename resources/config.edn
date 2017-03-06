@@ -2,7 +2,7 @@
  :env-config
  {:onyx/tenancy-id #profile {:default "1"
                              :docker #env ONYX_ID
-			     :mesos "travelport-onyx"}
+			     :mesos "hecuba-onyx-smartmeter"}
   :onyx.bookkeeper/server? false
   :onyx.bookkeeper/local-quorum? true
   :onyx.bookkeeper/delete-server-data? true
