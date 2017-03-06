@@ -1,0 +1,43 @@
+{
+  "acceptedResourceRoles": ["slave_public"],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "mastodonc/kixi.eventlog:git-@@TAG@@",
+      "parameters": [
+         {"key": "log-driver", "value": "gelf"},
+         {"key": "log-opt", "value": "gelf-address=udp://logstash.momondo-data-vpc.kixi:12201"},
+         {"key": "label", "value": "cluster=momondo"},
+         {"key": "label", "value": "application=kixi.travelport-eventlog"},
+         {"key": "env", "value": "ZK_CONNECT=master.mesos:2181/kafka0"},
+         {"key": "env", "value": "AWS_DEFAULT_REGION=eu-west-1"},
+         {"key": "env", "value": "TOPICS=#{\"travelport-onyx-workflow\"}"}
+      ],
+      "network": "BRIDGE",
+      "portMappings": [
+          {
+              "containerPort": 4001,
+              "hostPort": 4001,
+              "protocol": "tcp"
+          },
+          {
+              "containerPort": 8080,
+              "hostPort": @@EVENTLOGPORT@@,
+              "protocol": "tcp"
+          }
+      ]
+    }
+  },
+  "mem": 512,
+  "id": "kixi-travelport-eventlog@@NUMBER@@",
+  "healthChecks": [{
+    "path": "/_elb_status",
+    "portIndex": 1,
+    "protocol": "HTTP",
+    "gracePeriodSeconds": 300,
+    "intervalSeconds": 60,
+    "timeoutSeconds": 20,
+    "maxConsecutiveFailures": 3,
+    "ignoreHttp1xx": false
+  }]
+}

@@ -1,31 +1,70 @@
-{:env-config
+{:app-name "onyx.travelport.workflow"
+ :env-config
  {:onyx/tenancy-id #profile {:default "1"
-                             :docker #env ONYX_ID}
-  :onyx.bookkeeper/server? true
+                             :docker #env ONYX_ID
+			     :mesos "travelport-onyx"}
+  :onyx.bookkeeper/server? false
   :onyx.bookkeeper/local-quorum? true
   :onyx.bookkeeper/delete-server-data? true
   :onyx.bookkeeper/local-quorum-ports [3196 3197 3198]
   :onyx.bookkeeper/port 3196
-  :zookeeper/address #profile {:default "127.0.0.1:2188"
-                               :docker "zookeeper:2181"}
-  :zookeeper/server? #profile {:default true
-                               :docker false}
+  :zookeeper/address #profile {:default "127.0.0.1:2181"
+                               :docker "zookeeper:2181"
+                               :mesos "master.mesos:2181/dcos-service-kafka"}
+  :zookeeper/server? #profile {:default false
+                               :docker false
+                               :mesos false}
   :zookeeper.server/port 2188
   :onyx.log/config #profile {:default nil
-                             :docker {:level :info}}}
+                             :docker {:level :info}
+                             :mesos {:level :info}}}
  :peer-config
  {:onyx/tenancy-id #profile {:default "1"
-                             :docker #env ONYX_ID}
-  :zookeeper/address #profile {:default "127.0.0.1:2188"
-                               :docker "zookeeper:2181"}
+                             :docker #env ONYX_ID
+                             :mesos "travelport-onyx"}
+  :zookeeper/address #profile {:default "127.0.0.1:2181"
+                               :docker "zookeeper:2181"
+                               :mesos "master.mesos:2181/dcos-service-kafka"}
   :onyx.peer/job-scheduler :onyx.job-scheduler/balanced
   :onyx.peer/zookeeper-timeout 60000
   :onyx.messaging/allow-short-circuit? #profile {:default false
-                                                 :docker true}
+                                                 :docker true
+                                                 :mesos true}
   :onyx.messaging/impl :aeron
   :onyx.messaging/bind-addr #or [#env BIND_ADDR "localhost"]
   :onyx.messaging/peer-port 40200
   :onyx.messaging.aeron/embedded-driver? #profile {:default true
-                                                   :docker false}
+                                                   :docker false
+                                                   :mesos false}
   :onyx.log/config #profile {:default nil
-                             :docker {:level :info}}}}
+                             :docker {:level :info}
+                             :mesos {:level :info}}}
+ :web-server #profile
+ {:default {:vhost #or [#env VHOST "localhost"]
+            :port 8082
+            :request-logging? true}
+  :docker {:vhost #or [#env VHOST "localhost"]
+           :port 8082
+           :request-logging? true}
+  :mesos {:vhost :*
+          :port 18082
+          :request-logging? true}}
+ :job-config
+ {:kafka-in-topic #or [#env KAFKA_IN_TOPIC #profile {:default "test-in"
+                                                     :docker "test-in"
+                                                     :mesos "hecuba-smartmeter-measurement-event"}]
+  :kafka-out-topic #or [#env KAFKA_OUT_TOPIC #profile {:default "test-out"
+                                                       :docker "test-out"
+                                                       :mesos "hecuba-measurement-event"}]
+  :aws-region #or [#env AWS_REGION #profile {:default "eu-central-1"
+                                             :docker "eu-central-1"
+                                             :mesos "eu-central-1"}]
+  :s3-bucket #or [#env S3_BUCKET #profile {:default "mc-test-hecuba-events"
+                                           :docker "mc-test-hecuba-events"
+                                           :mesos "mc-test-hecuba-events"}]
+  :batch-size #or [#env ONYX_BATCH_SIZE #profile {:default 1
+                                                  :docker 1
+                                                  :mesos 1}]
+  :batch-timeout #or [#env ONYX_BATCH_SIZE #profile {:default 1000
+                                                     :docker 1000
+                                                     :mesos 1000}]}}

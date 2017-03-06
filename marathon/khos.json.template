@@ -1,0 +1,39 @@
+{
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "mastodonc/kixi.hecuba.onyx.smartmeter:git-@@TAG@@",
+      "parameters": [
+         {"key": "log-driver", "value": "gelf"},
+         {"key": "log-opt", "value": "gelf-address=udp://logstash.vpc-vpc.kixi:12201"},
+         {"key": "label", "value": "cluster=momondo"},
+         {"key": "label", "value": "application=kixi.hecuba.onyx.smartmeter"},
+	 {"key": "shm-size", "value": "512m"},
+	 {"key": "env", "value": "ZK_CONNECT=master.mesos:2181/dcos-service-kafka"},
+         {"key": "env", "value": "AWS_ACCESS_KEY_ID=@@AWS_ACCESS_KEY_ID@@"},
+         {"key": "env", "value": "AWS_SECRET_KEY=@@AWS_SECRET_KEY@@"},
+         {"key": "env", "value": "NUMBER=@@NUMBER@@"}
+      ],
+      "network": "BRIDGE",
+      "portMappings": [
+          {
+              "containerPort": 18082,
+              "hostPort": 18082,
+              "protocol": "tcp"
+          }
+      ]
+    }
+  },
+  "mem": 1024,
+  "id": "kixi-hecuba-onyx-smartmeter@@NUMBER@@",
+  "healthChecks": [{
+    "protocol": "TCP",
+    "path": "/health_check",
+    "port": 18082,
+    "gracePeriodSeconds": 300,
+    "intervalSeconds": 60,
+    "timeoutSeconds": 120,
+    "maxConsecutiveFailures": 3,
+    "ignoreHttp1xx": false
+  }]
+}

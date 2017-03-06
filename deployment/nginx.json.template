@@ -1,0 +1,36 @@
+{
+  "acceptedResourceRoles": ["slave_public"],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "mastodonc/nginx-reverse-proxy:latest",
+      "parameters": [
+         {"key": "log-driver", "value": "gelf"},
+         {"key": "log-opt", "value": "gelf-address=udp://logstash.vpc-vpc.kixi:12201"},
+         {"key": "label", "value": "cluster=momondo"},
+         {"key": "label", "value": "application=nginx"},
+         {"key": "env", "value": "NGINX_SERVER_ADDR=kixi-travelport-eventlog@@NUMBER@@.marathon.mesos"},
+         {"key": "env", "value": "NGINX_SERVER_PORT=@@EVENTLOGPORT@@"}
+      ],
+      "network": "BRIDGE",
+      "portMappings": [
+          {
+              "containerPort": 80,
+              "hostPort": 9999,
+              "protocol": "tcp"
+          }
+      ]
+    }
+  },
+  "id": "nginx@@NUMBER@@",
+  "healthChecks": [{
+    "path": "/_elb_status",
+    "portIndex": 0,
+    "protocol": "HTTP",
+    "gracePeriodSeconds": 300,
+    "intervalSeconds": 60,
+    "timeoutSeconds": 20,
+    "maxConsecutiveFailures": 3,
+    "ignoreHttp1xx": false
+  }]
+}

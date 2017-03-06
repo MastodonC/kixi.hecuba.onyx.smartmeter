@@ -1,0 +1,45 @@
+{
+  "acceptedResourceRoles": ["slave_public"],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "mastodonc/onyx-tport:git-@@TAG@@",
+      "parameters": [
+         {"key": "log-driver", "value": "gelf"},
+         {"key": "log-opt", "value": "gelf-address=udp://logstash.vpc-vpc.kixi:12201"},
+         {"key": "label", "value": "cluster=momondo"},
+         {"key": "label", "value": "application=onyx.travelport"},
+	 {"key": "shm-size", "value": "512m"},
+	 {"key": "env", "value": "ZK_CONNECT=master.mesos:2181/kafka0"},
+         {"key": "env", "value": "AWS_ACCESS_KEY_ID=@@AWS_ACCESS_KEY_ID@@"},
+         {"key": "env", "value": "AWS_SECRET_KEY=@@AWS_SECRET_KEY@@"},
+         {"key": "env", "value": "NUMBER=@@NUMBER@@"}
+      ],
+      "network": "BRIDGE",
+      "portMappings": [
+          {
+              "containerPort": 4001,
+              "hostPort": 4001,
+              "protocol": "tcp"
+          },
+          {
+              "containerPort": 8082,
+              "hostPort": 18082,
+              "protocol": "tcp"
+          }
+      ]
+    }
+  },
+  "mem": 1024,
+  "id": "onyx-travelport@@NUMBER@@",
+  "healthChecks": [{
+    "path": "/health_check",
+    "portIndex": 1,
+    "protocol": "HTTP",
+    "gracePeriodSeconds": 300,
+    "intervalSeconds": 60,
+    "timeoutSeconds": 20,
+    "maxConsecutiveFailures": 3,
+    "ignoreHttp1xx": false
+  }]
+}
