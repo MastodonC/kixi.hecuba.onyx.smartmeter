@@ -3,32 +3,36 @@
             [schema.core :as s]
             [clj-time.core :as t]
             [clj-time.format :as f]
+            [clojure.string :as cstr]
             [taoensso.timbre :as timbre]))
-;; sample file in resources/test-files/ folder.
+
+;; For measurements JSON definition see: https://github.com/MastodonC/kixi.hecuba/blob/master/doc/api.md#measurements
+;; Values are sent to the API as strings so no conversion needs doing.
+;; Timestamp from Aprose is the same as the Hecuba API.
 (defn get-data [segment]
-  (mapv #(let [datetime (->> %
-                             :content
-                             first
-                             :content
-                             first)
-               primary (->> %
-                            :content
-                            second
-                            :content
-                            first
-                            :content
-                            first
-                            Double/valueOf)
-               secondary (->> %
-                              :content
-                              second
-                              :content
-                              second
-                              :content
-                              first
-                              Double/valueOf)]
-           ;; WIP: create the measurements to push to hecuba measurements queue here....
-           {:primary primary :secondary secondary :timestamp datetime}) (get-in segment [:content])))
+  (let [measurements (map #(let [consumption-type (-> %
+                                                      :content
+                                                      second
+                                                      :tag
+                                                      name
+                                                      cstr/lower-case
+                                                      (str "Consumption"))
+                                 datetime (->> %
+                                               :content
+                                               first
+                                               :content
+                                               first)
+                                 primary (->> %
+                                              :content
+                                              second
+                                              :content
+                                              first
+                                              :content
+                                              first)]
+                             {:value primary :timestamp datetime :type consumption-type}) (get-in segment [:content]))]
+    {:measurements measurements
+     :kafka-payload {:entity-id "entity-id-to-do"
+                     :device-id "device-id-to-do"}}))
 
 (s/defn measurement-extraction
   ([task-name :- s/Keyword task-opts]
@@ -36,48 +40,3 @@
                              :onyx/type :function
                              :onyx/fn :kixi.hecuba.onyx.smartmeter.tasks.process-smartmeter/get-data}
                             task-opts)}}))
-
-
-(comment
-
-  ;; all the required fields in a map
-  (mapv #(let [datetime (->> %
-                             :content
-                             first
-                             :content
-                             first)
-               primary (->> %
-                            :content
-                            second
-                            :content
-                            first
-                            :content
-                            first
-                            Double/valueOf)
-               secondary (->> %
-                              :content
-                              second
-                              :content
-                              second
-                              :content
-                              first
-                              Double/valueOf)]
-           {:primary primary :secondary secondary :timestamp datetime}) (get-in meas [:content]))
-
-  ;; primary electricity values
-  (mapv (fn [row] (->> row
-                       :content
-                       second
-                       :content
-                       first)) (get-in meas [:content]))
-  ;; secondary
-  (mapv (fn [row] (->> row
-                       :content
-                       second
-                       :content
-                       second)) (get-in meas [:content]))
-  ;; get timestamp of reading
-  (mapv (fn [row] (->> row
-                       :content
-                       first
-                       )) (get-in meas [:content])))
